@@ -115,15 +115,22 @@ Commit this stage as the tested/documented sys-crate milestone.
 
 Depends on all prior stages.
 
-- [ ] From a fresh recursive clone on the documented Linux environment, run the documented prerequisite check and `cargo build --workspace` without any manual native build command.
-- [ ] Run `cargo fmt --all --check`.
-- [ ] Run `cargo check --workspace --all-targets`.
-- [ ] Run `cargo clippy --workspace --all-targets -- -D warnings`, with any generated-binding exception narrowly scoped and documented.
-- [ ] Run `cargo test --workspace --all-targets`.
-- [ ] Run `cargo build --workspace --release` to exercise release-profile CMake configuration and linking.
-- [ ] Run `git diff --check`, verify `git submodule status`, and confirm all generated/native artifacts are ignored under Cargo's target tree and both the parent repository and Carla submodule are clean.
+- [x] From a fresh recursive clone on the documented Linux environment, run the documented prerequisite check and `cargo build --workspace` without any manual native build command.
+- [x] Run `cargo fmt --all --check`.
+- [x] Run `cargo check --workspace --all-targets`.
+- [x] Run `cargo clippy --workspace --all-targets -- -D warnings`, with any generated-binding exception narrowly scoped and documented.
+- [x] Run `cargo test --workspace --all-targets`.
+- [x] Run `cargo build --workspace --release` to exercise release-profile CMake configuration and linking.
+- [x] Run `git diff --check`, verify `git submodule status`, and confirm all generated/native artifacts are ignored under Cargo's target tree and both the parent repository and Carla submodule are clean.
 
 Commit any validation-only fixes as a final meaningful milestone, then record the commands and results in this plan.
+
+Validation record (2026-08-09):
+
+- A fresh `git clone --recurse-submodules` in `/tmp/rust-carla-rack-validation` checked out Carla at `97a9e0740baf6df2df942495c02532a624c44682`; the documented tool checks reported Rust 1.94.1, Cargo 1.94.0, Git 2.51.2, CMake 4.1.2, GCC/G++ 15.2.0, and Clang 21.1.8.
+- `cargo build --workspace` completed in that clone without manual CMake/Make commands or Carla-specific library-path variables.
+- Formatting, all-target checks, Clippy with warnings denied, all workspace tests, and the release build passed in the implementation checkout. Both integration tests passed, including the `Dummy` engine lifecycle.
+- `git diff --check` passed; the Carla submodule was clean at the expected pin; `target/` was ignored; no generated bindings, CMake cache, or Carla library artifact was tracked outside Cargo's target tree.
 
 ## Execution contract
 
