@@ -95,7 +95,8 @@ jobs:
 
       - name: Verify native architecture
         shell: bash
-        run: rustc -vV | grep --fixed-strings "host: ${{ matrix.target }}"
+        run: |
+          rustc -vV | grep --fixed-strings "host: ${{ matrix.target }}"
 
       - name: Run tests
         shell: bash
