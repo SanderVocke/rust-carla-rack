@@ -31,10 +31,12 @@ jobs:
             runner: windows-2025
             target: x86_64-pc-windows-msvc
             os: windows
+            msvc_arch: x64
           - name: Windows ARM64
             runner: windows-11-arm
             target: aarch64-pc-windows-msvc
             os: windows
+            msvc_arch: amd64_arm64
           - name: macOS x64
             runner: macos-15-intel
             target: x86_64-apple-darwin
@@ -44,6 +46,7 @@ jobs:
             target: aarch64-apple-darwin
             os: macos
     env:
+      CMAKE_GENERATOR: Ninja
       CMAKE_C_COMPILER_LAUNCHER: sccache
       CMAKE_CXX_COMPILER_LAUNCHER: sccache
       SCCACHE_GHA_ENABLED: "true"
@@ -58,6 +61,12 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
+
+      - name: Configure MSVC
+        if: matrix.os == 'windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.msvc_arch }}
 
       - name: Cache Rust build
         uses: Swatinem/rust-cache@v2
@@ -104,6 +113,15 @@ jobs:
         run: |
           rustc -vV | grep --fixed-strings "host: ${{ matrix.target }}"
 
-      - name: Run tests
+      - name: Clear cached native build state
+        run: cargo clean --package carla-sys --target "${{ matrix.target }}"
+
+      - name: Run tests on Unix
+        if: matrix.os != 'windows'
         shell: bash
+        run: cargo test --locked --workspace --all-targets --target "${{ matrix.target }}"
+
+      - name: Run tests on Windows
+        if: matrix.os == 'windows'
+        shell: pwsh
         run: cargo test --locked --workspace --all-targets --target "${{ matrix.target }}"
