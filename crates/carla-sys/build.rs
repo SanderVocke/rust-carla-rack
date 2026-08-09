@@ -12,6 +12,8 @@ fn main() {
     if !matches!(target_os.as_str(), "linux" | "macos" | "windows") {
         panic!("carla-sys does not support target OS `{target_os}`");
     }
+    let target_arch =
+        env::var("CARGO_CFG_TARGET_ARCH").expect("Cargo did not provide CARGO_CFG_TARGET_ARCH");
 
     let carla_root = Path::new(CARLA_ROOT);
     let cmake_project = carla_root.join("cmake/CMakeLists.txt");
@@ -32,7 +34,16 @@ fn main() {
     let library_dir = out_dir.join("native");
     let library_dir_string = library_dir.to_string_lossy().into_owned();
 
-    let mut config = cmake::Config::new(carla_root.join("cmake"));
+    let windows_arm64 = target_os == "windows" && target_arch == "aarch64";
+    let cmake_source = if windows_arm64 {
+        PathBuf::from("cmake")
+    } else {
+        carla_root.join("cmake")
+    };
+    let mut config = cmake::Config::new(cmake_source);
+    if windows_arm64 {
+        config.define("CARLA_SOURCE_DIR", carla_root.as_os_str());
+    }
     config
         .build_target("carla-standalone")
         .define("CARLA_BUILD_FRAMEWORKS", "OFF")
@@ -44,7 +55,7 @@ fn main() {
         .define("CMAKE_ARCHIVE_OUTPUT_DIRECTORY", &library_dir_string)
         .define("CMAKE_RUNTIME_OUTPUT_DIRECTORY", &library_dir_string);
 
-    configure_platform(&mut config, &target_os);
+    configure_platform(&mut config, &target_os, &target_arch);
     configure_compiler_cache(&mut config);
 
     for configuration in ["DEBUG", "RELEASE", "RELWITHDEBINFO", "MINSIZEREL"] {
@@ -116,12 +127,9 @@ fn normalize_canonical_path(path: PathBuf) -> PathBuf {
     path
 }
 
-fn configure_platform(config: &mut cmake::Config, target_os: &str) {
-    let target_arch =
-        env::var("CARGO_CFG_TARGET_ARCH").expect("Cargo did not provide CARGO_CFG_TARGET_ARCH");
-
+fn configure_platform(config: &mut cmake::Config, target_os: &str, target_arch: &str) {
     if target_os == "macos" {
-        let cmake_arch = match target_arch.as_str() {
+        let cmake_arch = match target_arch {
             "aarch64" => "arm64",
             "x86_64" => "x86_64",
             _ => panic!("carla-sys does not support macOS target architecture `{target_arch}`"),
@@ -135,10 +143,6 @@ fn configure_platform(config: &mut cmake::Config, target_os: &str) {
         config
             .define("CMAKE_POLICY_DEFAULT_CMP0141", "NEW")
             .define("CMAKE_MSVC_DEBUG_INFORMATION_FORMAT", "Embedded");
-
-        if target_arch == "aarch64" {
-            config.cflag("/DMINIMP3_NO_SIMD").cflag("/DDR_MP3_NO_SIMD");
-        }
     }
 }
 
@@ -199,6 +203,7 @@ fn emit_rerun_directives() {
     for path in [
         "build.rs",
         "wrapper.h",
+        "cmake/CMakeLists.txt",
         "../../vendor/Carla/cmake/CMakeLists.txt",
         "../../vendor/Carla/source/backend",
         "../../vendor/Carla/source/includes",
