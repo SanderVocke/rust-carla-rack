@@ -21,7 +21,7 @@ The backend build does not require Carla's nested `Carla-Plugins` submodule.
 
 ## Prerequisites
 
-The initially supported and validated target is Linux. Building requires:
+CI builds and tests native x64 and ARM64 targets on Linux, Windows, and macOS. Building requires:
 
 - Rust and Cargo 1.85 or newer;
 - Git;
@@ -57,7 +57,7 @@ Cargo invokes CMake through `carla-sys`'s build script. Native artifacts and gen
 
 The initial build creates Carla's shared `carla_standalone2` backend with JACK, OSC, and ambient pkg-config integrations disabled. Carla's internal plugin-format support, including JSFX, remains enabled. The smoke test uses Carla's `Dummy` driver and needs no audio device, JACK server, plugin installation, display server, or network access.
 
-Cargo supplies the native library search path while it runs workspace build products and tests. Packaging or running a copied downstream executable independently will also require distributing `libcarla_standalone2.so` and configuring an rpath or `LD_LIBRARY_PATH`; that deployment policy is outside this milestone.
+Cargo supplies the native library search path while it runs workspace build products and tests. Packaging or running a copied downstream executable independently will also require distributing Carla's shared backend (`libcarla_standalone2.so`, `libcarla_standalone2.dylib`, or `libcarla_standalone2.dll`) and configuring the platform's runtime library search path; that deployment policy is outside this milestone.
 
 ## Updating Carla
 

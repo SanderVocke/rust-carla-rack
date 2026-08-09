@@ -9,8 +9,8 @@ fn main() {
 
     let target_os =
         env::var("CARGO_CFG_TARGET_OS").expect("Cargo did not provide CARGO_CFG_TARGET_OS");
-    if target_os != "linux" {
-        panic!("carla-sys currently supports Linux targets only; target OS was {target_os}");
+    if !matches!(target_os.as_str(), "linux" | "macos" | "windows") {
+        panic!("carla-sys does not support target OS `{target_os}`");
     }
 
     let carla_root = Path::new(CARLA_ROOT);
@@ -33,6 +33,7 @@ fn main() {
     let mut config = cmake::Config::new(carla_root.join("cmake"));
     config
         .build_target("carla-standalone")
+        .define("CARLA_BUILD_FRAMEWORKS", "OFF")
         .define("CARLA_BUILD_STATIC", "OFF")
         .define("CARLA_USE_JACK", "OFF")
         .define("CARLA_USE_OSC", "OFF")
@@ -40,6 +41,9 @@ fn main() {
         .define("CMAKE_LIBRARY_OUTPUT_DIRECTORY", &library_dir_string)
         .define("CMAKE_ARCHIVE_OUTPUT_DIRECTORY", &library_dir_string)
         .define("CMAKE_RUNTIME_OUTPUT_DIRECTORY", &library_dir_string);
+
+    configure_platform(&mut config, &target_os);
+    configure_compiler_cache(&mut config);
 
     for configuration in ["DEBUG", "RELEASE", "RELWITHDEBINFO", "MINSIZEREL"] {
         config.define(
@@ -58,7 +62,13 @@ fn main() {
 
     config.build();
 
-    let backend = library_dir.join("libcarla_standalone2.so");
+    let backend_name = match target_os.as_str() {
+        "linux" => "libcarla_standalone2.so",
+        "macos" => "libcarla_standalone2.dylib",
+        "windows" => "libcarla_standalone2.dll",
+        _ => unreachable!(),
+    };
+    let backend = library_dir.join(backend_name);
     if !backend.is_file() {
         panic!(
             "Carla CMake build completed without producing {}",
@@ -68,8 +78,13 @@ fn main() {
 
     generate_bindings(&carla_root, &out_dir);
 
+    let link_name = if target_os == "windows" {
+        "libcarla_standalone2"
+    } else {
+        "carla_standalone2"
+    };
     println!("cargo::rustc-link-search=native={}", library_dir.display());
-    println!("cargo::rustc-link-lib=dylib=carla_standalone2");
+    println!("cargo::rustc-link-lib=dylib={link_name}");
     println!(
         "cargo::metadata=include_backend={}",
         carla_root.join("source/backend").display()
@@ -83,6 +98,35 @@ fn main() {
         carla_root.join("source/utils").display()
     );
     println!("cargo::metadata=library_dir={}", library_dir.display());
+}
+
+fn configure_platform(config: &mut cmake::Config, target_os: &str) {
+    if target_os == "macos" {
+        let target_arch =
+            env::var("CARGO_CFG_TARGET_ARCH").expect("Cargo did not provide CARGO_CFG_TARGET_ARCH");
+        let cmake_arch = match target_arch.as_str() {
+            "aarch64" => "arm64",
+            "x86_64" => "x86_64",
+            _ => panic!("carla-sys does not support macOS target architecture `{target_arch}`"),
+        };
+        config
+            .define("CMAKE_OSX_ARCHITECTURES", cmake_arch)
+            .define("CMAKE_OSX_DEPLOYMENT_TARGET", "11.0");
+    }
+
+    if target_os == "windows" {
+        config
+            .define("CMAKE_POLICY_DEFAULT_CMP0141", "NEW")
+            .define("CMAKE_MSVC_DEBUG_INFORMATION_FORMAT", "Embedded");
+    }
+}
+
+fn configure_compiler_cache(config: &mut cmake::Config) {
+    for variable in ["CMAKE_C_COMPILER_LAUNCHER", "CMAKE_CXX_COMPILER_LAUNCHER"] {
+        if let Some(value) = env::var_os(variable) {
+            config.define(variable, value);
+        }
+    }
 }
 
 fn generate_bindings(carla_root: &Path, out_dir: &Path) {
@@ -150,6 +194,8 @@ fn emit_rerun_directives() {
         "CMAKE_GENERATOR",
         "CMAKE_PREFIX_PATH",
         "CMAKE_TOOLCHAIN_FILE",
+        "CMAKE_C_COMPILER_LAUNCHER",
+        "CMAKE_CXX_COMPILER_LAUNCHER",
         "CC",
         "CFLAGS",
         "CXX",

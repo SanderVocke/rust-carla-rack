@@ -8,7 +8,7 @@ The crate's build script:
 2. generates bindings from `CarlaHost.h` into Cargo's `OUT_DIR` using bindgen;
 3. links consumers to the resulting shared `carla_standalone2` library.
 
-Only Linux is currently supported. CMake 3.15+, C/C++ compilers, Clang, and libclang are required. JACK, OSC, and pkg-config-discovered optional integrations are disabled for a deterministic headless build. Carla's GUI/frontend is not built.
+Native x64 and ARM64 builds are tested on Linux, Windows, and macOS. CMake 3.15+, C/C++ compilers, Clang, and libclang are required. JACK, OSC, and pkg-config-discovered optional integrations are disabled for a deterministic headless build. Carla's GUI/frontend is not built.
 
 This crate intentionally exposes only Carla's unsafe C API. It does not model handle ownership, pointer lifetimes, callbacks, threading, or engine state safely. Carla-owned return pointers must not be freed unless its API explicitly says otherwise.
 
