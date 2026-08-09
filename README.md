@@ -29,7 +29,19 @@ The initially supported and validated target is Linux. Building requires:
 - C and C++ compilers with C++11 support;
 - Clang and libclang for bindgen.
 
-Carla's optional pkg-config dependencies are not needed by this build.
+Carla's optional pkg-config dependencies are not needed by this build. Check the installed toolchain before building:
+
+```sh
+rustc --version
+cargo --version
+git --version
+cmake --version
+cc --version
+c++ --version
+clang --version
+```
+
+Bindgen will report an actionable build error if libclang is not available.
 
 ## Build and test
 
