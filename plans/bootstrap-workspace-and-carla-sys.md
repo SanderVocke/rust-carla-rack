@@ -65,16 +65,16 @@ Commit this stage as the workspace/submodule foundation.
 
 Depends on Stage 1.
 
-- [ ] Implement `crates/carla-sys/build.rs` to validate the submodule, configure Carla's `cmake/` project under `OUT_DIR`, select the Cargo profile, apply the deterministic headless options, and build only `carla-standalone`.
-- [ ] Normalize single- and multi-config CMake output paths from Cargo target information, then emit the correct native search path and dynamic link directive for `carla_standalone2`.
-- [ ] Add narrow `rerun-if-changed` coverage for the wrapper and Carla source/CMake inputs, `rerun-if-env-changed` coverage for supported toolchain controls, and metadata exposing the native include/library roots to immediate future dependents.
-- [ ] Ensure diagnostic failures distinguish an uninitialized submodule, missing CMake/compiler, unsupported target handling, and native compilation failure.
+- [x] Implement `crates/carla-sys/build.rs` to validate the submodule, configure Carla's `cmake/` project under `OUT_DIR`, select the Cargo profile, apply the deterministic headless options, and build only `carla-standalone`.
+- [x] Normalize single- and multi-config CMake output paths from Cargo target information, then emit the correct native search path and dynamic link directive for `carla_standalone2`.
+- [x] Add narrow `rerun-if-changed` coverage for the wrapper and Carla source/CMake inputs, `rerun-if-env-changed` coverage for supported toolchain controls, and metadata exposing the native include/library roots to immediate future dependents.
+- [x] Ensure diagnostic failures distinguish an uninitialized submodule, missing CMake/compiler, unsupported target handling, and native compilation failure.
 
 Verification:
 
-- [ ] Run `cargo clean && cargo build -p carla-sys -vv` from the root and confirm Cargo invokes CMake automatically.
-- [ ] Confirm the backend shared library exists below the package's `OUT_DIR`, exports `carla_standalone_host_init`, and no build output appears inside `vendor/Carla`.
-- [ ] Inspect the verbose build to confirm the selected target is `carla-standalone`, not Carla's frontend or the broad install/all target.
+- [x] Run `cargo clean && cargo build -p carla-sys -vv` from the root and confirm Cargo invokes CMake automatically.
+- [x] Confirm the backend shared library exists below the package's `OUT_DIR`, exports `carla_standalone_host_init`, and no build output appears inside `vendor/Carla`.
+- [x] Inspect the verbose build to confirm the selected target is `carla-standalone`, not Carla's frontend or the broad install/all target.
 
 Commit this stage as the native backend build milestone.
 
