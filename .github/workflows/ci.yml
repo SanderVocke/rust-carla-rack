@@ -70,6 +70,12 @@ jobs:
         with:
           version: v0.17.0
 
+      - name: Start sccache
+        shell: bash
+        run: |
+          sccache --start-server
+          sccache --zero-stats
+
       - name: Install Linux native dependencies
         if: matrix.os == 'linux'
         run: sudo apt-get update && sudo apt-get install --yes libclang-dev

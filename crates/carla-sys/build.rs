@@ -117,9 +117,10 @@ fn normalize_canonical_path(path: PathBuf) -> PathBuf {
 }
 
 fn configure_platform(config: &mut cmake::Config, target_os: &str) {
+    let target_arch =
+        env::var("CARGO_CFG_TARGET_ARCH").expect("Cargo did not provide CARGO_CFG_TARGET_ARCH");
+
     if target_os == "macos" {
-        let target_arch =
-            env::var("CARGO_CFG_TARGET_ARCH").expect("Cargo did not provide CARGO_CFG_TARGET_ARCH");
         let cmake_arch = match target_arch.as_str() {
             "aarch64" => "arm64",
             "x86_64" => "x86_64",
@@ -134,6 +135,10 @@ fn configure_platform(config: &mut cmake::Config, target_os: &str) {
         config
             .define("CMAKE_POLICY_DEFAULT_CMP0141", "NEW")
             .define("CMAKE_MSVC_DEBUG_INFORMATION_FORMAT", "Embedded");
+
+        if target_arch == "aarch64" {
+            config.cflag("/DMINIMP3_NO_SIMD").cflag("/DDR_MP3_NO_SIMD");
+        }
     }
 }
 
