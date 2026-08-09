@@ -20,9 +20,11 @@ fn main() {
             "Carla submodule is not initialized; run `git submodule update --init vendor/Carla`"
         );
     }
-    let carla_root = carla_root
-        .canonicalize()
-        .expect("failed to resolve the Carla submodule path");
+    let carla_root = normalize_canonical_path(
+        carla_root
+            .canonicalize()
+            .expect("failed to resolve the Carla submodule path"),
+    );
 
     require_cmake();
 
@@ -98,6 +100,20 @@ fn main() {
         carla_root.join("source/utils").display()
     );
     println!("cargo::metadata=library_dir={}", library_dir.display());
+}
+
+fn normalize_canonical_path(path: PathBuf) -> PathBuf {
+    if cfg!(windows) {
+        let display = path.to_string_lossy();
+        if let Some(path) = display.strip_prefix(r"\\?\UNC\") {
+            return PathBuf::from(format!(r"\\{path}"));
+        }
+        if let Some(path) = display.strip_prefix(r"\\?\") {
+            return PathBuf::from(path);
+        }
+    }
+
+    path
 }
 
 fn configure_platform(config: &mut cmake::Config, target_os: &str) {
