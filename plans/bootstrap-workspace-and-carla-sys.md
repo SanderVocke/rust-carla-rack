@@ -82,16 +82,16 @@ Commit this stage as the native backend build milestone.
 
 Depends on Stage 2.
 
-- [ ] Add a minimal wrapper header and configure bindgen in `build.rs` for C parsing of Carla's public host header and required include directories.
-- [ ] Restrict generation to the standalone host functions and recursively required public Carla types/constants; derive only traits that are valid for the underlying C declarations.
-- [ ] Add `src/lib.rs` to include the generated `OUT_DIR` file, document that the surface is raw/unsafe and Carla-owned return pointers must not be freed, and limit naming/dead-code lint exceptions to generated code.
-- [ ] Verify representative engine, plugin, parameter, transport, and project functions and their referenced structs/enums are public, while C++ implementation APIs are not exposed.
+- [x] Add a minimal wrapper header and configure bindgen in `build.rs` for C parsing of Carla's public host header and required include directories.
+- [x] Restrict generation to the standalone host functions and recursively required public Carla types/constants; derive only traits that are valid for the underlying C declarations.
+- [x] Add `src/lib.rs` to include the generated `OUT_DIR` file, document that the surface is raw/unsafe and Carla-owned return pointers must not be freed, and limit naming/dead-code lint exceptions to generated code.
+- [x] Verify representative engine, plugin, parameter, transport, and project functions and their referenced structs/enums are public, while C++ implementation APIs are not exposed.
 
 Verification:
 
-- [ ] Run `cargo check -p carla-sys` and `cargo doc -p carla-sys --no-deps` with warnings denied where practical.
-- [ ] Add compile-time usage coverage for representative constants, opaque handles, callbacks, structs, and function signatures to catch an accidentally over-restrictive allowlist.
-- [ ] Re-run the build without changes and confirm Cargo/CMake/bindgen do not perform avoidable work.
+- [x] Run `cargo check -p carla-sys` and `cargo doc -p carla-sys --no-deps` with warnings denied where practical.
+- [x] Add compile-time usage coverage for representative constants, opaque handles, callbacks, structs, and function signatures to catch an accidentally over-restrictive allowlist.
+- [x] Re-run the build without changes and confirm Cargo/CMake/bindgen do not perform avoidable work.
 
 Commit this stage as the raw FFI binding milestone.
 

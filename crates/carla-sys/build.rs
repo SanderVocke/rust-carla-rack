@@ -66,6 +66,8 @@ fn main() {
         );
     }
 
+    generate_bindings(&carla_root, &out_dir);
+
     println!("cargo::rustc-link-search=native={}", library_dir.display());
     println!("cargo::rustc-link-lib=dylib=carla_standalone2");
     println!(
@@ -81,6 +83,36 @@ fn main() {
         carla_root.join("source/utils").display()
     );
     println!("cargo::metadata=library_dir={}", library_dir.display());
+}
+
+fn generate_bindings(carla_root: &Path, out_dir: &Path) {
+    let backend_include = carla_root.join("source/backend");
+    let public_include = carla_root.join("source/includes");
+    let utils_include = carla_root.join("source/utils");
+
+    let bindings = bindgen::Builder::default()
+        .header("wrapper.h")
+        .clang_arg("-x")
+        .clang_arg("c")
+        .clang_arg(format!("-I{}", backend_include.display()))
+        .clang_arg(format!("-I{}", public_include.display()))
+        .clang_arg(format!("-I{}", utils_include.display()))
+        .allowlist_function("carla_.*")
+        .allowlist_type(
+            "(Binary|Plugin|Parameter|Midi|Custom|Engine|Nsm|File|Patchbay|Internal|Special|Carla).*",
+        )
+        .allowlist_var(
+            "(BINARY|PLUGIN|PARAMETER|MIDI|CUSTOM|ENGINE|NSM|FILE|PATCHBAY|CONTROL|CARLA)_.*",
+        )
+        .derive_default(false)
+        .layout_tests(false)
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
+        .generate()
+        .expect("failed to generate Carla host bindings; ensure libclang is installed");
+
+    bindings
+        .write_to_file(out_dir.join("bindings.rs"))
+        .expect("failed to write generated Carla host bindings to OUT_DIR");
 }
 
 fn require_cmake() {
@@ -101,6 +133,7 @@ fn require_cmake() {
 fn emit_rerun_directives() {
     for path in [
         "build.rs",
+        "wrapper.h",
         "../../vendor/Carla/cmake/CMakeLists.txt",
         "../../vendor/Carla/source/backend",
         "../../vendor/Carla/source/includes",
