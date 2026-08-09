@@ -4,6 +4,8 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+description = "Raw Rust bindings to Carla's standalone plugin-host backend"
+readme = "README.md"
 links = "carla_standalone2"
 build = "build.rs"
 

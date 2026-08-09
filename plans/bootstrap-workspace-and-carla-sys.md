@@ -99,15 +99,15 @@ Commit this stage as the raw FFI binding milestone.
 
 Depends on Stage 3.
 
-- [ ] Add one serialized integration smoke test that calls the raw API to create a host, selects continuous-rack processing and internal transport, starts the `Dummy` driver, reports `carla_get_last_error` on failure, and closes the engine on success.
-- [ ] Keep the test independent of JACK, physical audio devices, plugin installations, GUI/display services, and network access.
-- [ ] Add concise root/crate documentation covering recursive checkout, CMake/C/C++/libclang prerequisites, root Cargo commands, shared-library runtime behavior, enabled/disabled Carla capabilities, initial Linux validation, submodule update policy, and licensing.
+- [x] Add one serialized integration smoke test that calls the raw API to create a host, selects continuous-rack processing and internal transport, starts the `Dummy` driver, reports `carla_get_last_error` on failure, and closes the engine on success.
+- [x] Keep the test independent of JACK, physical audio devices, plugin installations, GUI/display services, and network access.
+- [x] Add concise root/crate documentation covering recursive checkout, CMake/C/C++/libclang prerequisites, root Cargo commands, shared-library runtime behavior, enabled/disabled Carla capabilities, initial Linux validation, submodule update policy, and licensing.
 
 Verification:
 
-- [ ] Run `cargo test -p carla-sys --test backend_smoke -- --nocapture` and confirm backend initialization and shutdown succeed.
-- [ ] Run the documented commands from the repository root in a shell without Carla-specific library-path overrides.
-- [ ] Confirm the test and docs use only the public C host API and do not introduce a safe wrapper layer.
+- [x] Run `cargo test -p carla-sys --test backend_smoke -- --nocapture` and confirm backend initialization and shutdown succeed.
+- [x] Run the documented commands from the repository root in a shell without Carla-specific library-path overrides.
+- [x] Confirm the test and docs use only the public C host API and do not introduce a safe wrapper layer.
 
 Commit this stage as the tested/documented sys-crate milestone.
 
